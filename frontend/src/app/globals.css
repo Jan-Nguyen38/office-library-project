@@ -1,0 +1,13 @@
+body { margin: 0; background: #f5f5f5; }
+.paper {
+  background: #fff;
+  max-width: 794px;
+  margin: 24px auto;
+  padding: 24px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  font-family:'Times New Roman', serif;
+  font-size: 13px;
+  line-height: 1.5;
+  .paper table { border-collapse: collapse; width: 100%; }
+  .paper td, .paper th { border:1px solid #000; padding: 4px 8px; }
+}

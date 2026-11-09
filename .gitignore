@@ -1,0 +1,17 @@
+# Dependencies
+node_modules/
+
+# Build output
+dist/
+.next/
+out/
+*.tsbuildinfo
+
+# Environment (secrets) - keep .env.example
+.env
+.env*.local
+
+# Logs / OS
+*.log
+.DS_Store
+Thumbs.db

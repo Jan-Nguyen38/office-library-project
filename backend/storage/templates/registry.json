@@ -1,0 +1,11 @@
+{
+  "id": "don-xin-nghi-phep",
+  "name": "Đơn xin nghỉ phép",
+  "category": "Hành chính",
+  "description": "Mẫu đơn xin nghỉ phép năm gửi trưởng bộ phận.",
+  "tags": ["đơn", "nghỉ phép"],
+  "format": "docx",
+  "file": "files/don-xin-nghi-phep.docx",
+  "thumbnail": "thumbnails/don-xin-nghi-phep.png",
+  "updatedAt": "2026-10-30"
+}
