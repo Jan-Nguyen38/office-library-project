@@ -178,7 +178,21 @@ export default function DocumentEditor({
   const downloadWord = async () => {
     // Download what's on screen: stop if saving the latest edits failed
     if (saveState !== "saved" && !(await save())) return;
-    window.location.href = `${process.env.NEXT_PUBLIC_BACKEND_URL}/documents/${doc._id}/download`;
+    // Fetch instead of navigating: navigation fires the unsaved-changes prompt before React drops it after the save
+    try {
+      const res = await fetch(
+        `${process.env.NEXT_PUBLIC_BACKEND_URL}/documents/${doc._id}/download`,
+      );
+      if (!res.ok) throw new Error();
+      const url = URL.createObjectURL(await res.blob());
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `${fileName(title)}.docx`;
+      a.click();
+      URL.revokeObjectURL(url);
+    } catch {
+      message.error("Couldn't download the Word file. Try again.");
+    }
   };
 
   const downloadHtml = () => {
