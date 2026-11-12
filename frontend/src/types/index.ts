@@ -9,13 +9,9 @@ export interface ITemplate {
   createdAt?: Date;
   updatedAt?: Date;
 }
+// Shape returned by GET /templates
 export interface IPaginate<T> {
-  meta: {
-    current: number;
-    pageSize: number;
-    pages:number;
-    total: number;
-  }
+  total: number;
   results: T[];
 }
 export interface IUserDoc {

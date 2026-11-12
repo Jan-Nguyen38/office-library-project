@@ -1,0 +1,10 @@
+# Normalize line endings: LF in the repo and in working copies, on every OS
+* text=auto eol=lf
+
+# Never touch binary files
+*.docx binary
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.webp binary
+*.ico binary

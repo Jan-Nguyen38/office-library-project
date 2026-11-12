@@ -40,7 +40,7 @@ export class TemplatesController {
 
   @Get()
   findAll(
-    @Query() query: string,
+    @Query() query: Record<string, string>,
     @Query('current') current: string,
     @Query('pageSize') pageSize: string,) {    
     return this.templatesService.findAll(query, +current || 1, +pageSize || 8);
@@ -49,6 +49,11 @@ export class TemplatesController {
   @Get('categories')
   findCategories() {
     return this.templatesService.findCategories();
+  }
+
+  @Get('categories/counts')
+  countByCategory(@Query('q') q?: string) {
+    return this.templatesService.countByCategory(q);
   }
 
   @Get(':id')

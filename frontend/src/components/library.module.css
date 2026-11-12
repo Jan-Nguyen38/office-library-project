@@ -1,0 +1,222 @@
+.page {
+  max-width: 1180px;
+  margin: 0 auto;
+  padding: 36px 24px 56px;
+}
+
+/* Centered hero: question + search */
+.hero {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+
+.title {
+  margin: 8px 0 20px;
+  font-weight: 700;
+  font-size: clamp(28px, 4vw, 38px);
+  line-height: 1.2;
+  letter-spacing: -0.01em;
+  color: var(--ink);
+}
+
+.search {
+  width: 100%;
+  max-width: 600px;
+  border-radius: 999px;
+  padding-inline: 20px;
+}
+.search :global(.ant-input-prefix) { margin-inline-end: 10px; color: var(--graphite); }
+.searchNote { margin: 12px 0 0; color: var(--graphite); font-size: 14px; }
+
+/* Category bar sticks to the top while scrolling; desk background hides the sheets underneath */
+.page .tabs {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  margin: 32px 0 28px;
+  background: var(--desk);
+}
+.tabs :global(.ant-tabs-nav) { margin: 0; }
+.tabCount {
+  margin-left: 6px;
+  color: var(--graphite);
+  font-size: 13px;
+  font-variant-numeric: tabular-nums;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 40px 24px;
+}
+
+/* Grid view: one column per template */
+.item {
+  display: flex;
+  flex-direction: column;
+}
+
+.thumb { position: relative; }
+
+/* Each template is a pad of forms: the top sheet plus one peeking out behind it */
+.sheet {
+  display: block;
+  color: inherit;
+  text-decoration: none;
+  border-radius: 2px;
+}
+.sheet:focus-visible { outline: 2px solid var(--blue-ink); outline-offset: 6px; }
+
+.sheetPage {
+  position: relative;
+  aspect-ratio: 210 / 297;
+  background: var(--paper);
+  border: 1px solid var(--rule);
+  box-shadow: 4px 4px 0 -1px var(--paper), 4px 4px 0 0 var(--rule);
+  overflow: hidden;
+}
+.sheetPage img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: top;
+  display: block;
+}
+/* No thumbnail: print the template name as a heading on a blank page */
+.blank {
+  position: absolute;
+  inset: 22% 12% auto;
+  text-align: center;
+  font-weight: 700;
+  font-size: 13px;
+  line-height: 1.4;
+  text-transform: uppercase;
+}
+
+/* Hover / focus overlay centered on the sheet. Clicks on the tint fall through to the preview link. */
+.overlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 10px;
+  padding: 0 14%;
+  background: rgba(236, 238, 242, 0.78);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 120ms ease;
+}
+.thumb:hover .overlay,
+.thumb:focus-within .overlay { opacity: 1; }
+.thumb:hover .overlay > *,
+.thumb:focus-within .overlay > * { pointer-events: auto; }
+
+/* Touch screens have no hover: show the buttons under the sheet instead */
+@media (hover: none) {
+  .overlay {
+    position: static;
+    padding: 12px 0 0;
+    gap: 8px;
+    background: none;
+    opacity: 1;
+  }
+  .overlay > * { pointer-events: auto; }
+}
+
+.name,
+.rowName { text-decoration: none; }
+.name:hover,
+.rowName:hover { text-decoration: underline; }
+
+.name {
+  display: block;
+  margin: 14px 0 2px;
+  color: var(--ink);
+  font-weight: 600;
+  font-size: 16px;
+  line-height: 1.35;
+}
+.name:hover { color: var(--blue-ink); }
+.category { color: var(--blue-ink); font-size: 13px; }
+.desc {
+  margin: 4px 0 0;
+  color: var(--graphite);
+  font-size: 13px;
+  line-height: 1.5;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+/* List view: a white register sheet, one ruled line per template */
+.list {
+  background: var(--paper);
+  border: 1px solid var(--rule);
+  border-radius: 4px;
+}
+.row {
+  display: grid;
+  grid-template-columns: 48px minmax(0, 1fr) 160px auto;
+  align-items: center;
+  gap: 20px;
+  padding: 14px 20px;
+}
+.row + .row { border-top: 1px solid var(--rule); }
+.row:hover { background: #F7F8FA; }
+.rowThumb { display: block; }
+.rowThumb .sheetPage { box-shadow: none; }
+.rowName {
+  color: var(--ink);
+  font-weight: 600;
+  font-size: 16px;
+}
+.rowName:hover { color: var(--blue-ink); }
+.rowName:focus-visible { outline: 2px solid var(--blue-ink); outline-offset: 2px; border-radius: 2px; }
+.rowDesc {
+  margin: 2px 0 0;
+  color: var(--graphite);
+  font-size: 13px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.row .rowCategory { color: var(--blue-ink); font-size: 13px; }
+.rowActions { display: flex; gap: 8px; }
+
+.toolbar { display: flex; gap: 8px; }
+
+.empty {
+  padding: 48px 0;
+  max-width: 520px;
+}
+.empty p { margin: 0 0 16px; color: var(--graphite); }
+
+.pager { margin-top: 48px; }
+
+@media (max-width: 640px) {
+  .page { padding: 24px 16px 40px; }
+  /* View switch + add button get their own row above the category tabs */
+  .tabs :global(.ant-tabs-nav) { flex-wrap: wrap; }
+  .tabs :global(.ant-tabs-extra-content) { order: -1; margin-left: auto; padding-bottom: 8px; }
+  .tabs :global(.ant-tabs-nav-wrap) { flex-basis: 100%; }
+  .addLabel { display: none; }
+  .grid { grid-template-columns: repeat(2, 1fr); gap: 32px 16px; }
+  .row {
+    grid-template-columns: 40px minmax(0, 1fr);
+    gap: 4px 14px;
+    padding: 14px 16px;
+  }
+  .rowThumb { grid-row: span 2; align-self: start; }
+  .rowCategory { grid-column: 2; }
+  .rowActions { grid-column: 1 / -1; padding-top: 8px; }
+  .rowActions > * { flex: 1; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .overlay { transition: none; }
+}

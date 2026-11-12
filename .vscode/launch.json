@@ -8,14 +8,38 @@
         {
             "type": "node",
             "request": "launch",
-            "name": "Launch Program",
-            "skipFiles": [
-                "<node_internals>/**"
-            ],
-            "program": "${file}",
-            "outFiles": [
-                "${workspaceFolder}/**/*.js"
-            ]
+            "name": "Debug Nest Framework",
+            "args": ["${workspaceFolder}/backend/src/main.ts"],
+            "runtimeArgs": ["--nolazy", "-r", "ts-node/register", "-r", "tsconfig-paths/register"],
+            "sourceMaps": true,
+            "outFiles": [],
+            "cwd": "${workspaceFolder}/backend",
+            "env": {
+                "TS_NODE_PROJECT": "${workspaceFolder}/backend/tsconfig.json",
+                "TS_NODE_TRANSPILE_ONLY": "true"
+            },
+            "skipFiles": ["<node_internals>/**"]
+        },
+        {
+            "type": "node",
+            "request": "launch",
+            "name": "Run Frontend",
+            "cwd": "${workspaceFolder}/frontend",
+            "runtimeExecutable": "npm",
+            "runtimeArgs": ["run", "dev"],
+            "console": "integratedTerminal",
+            "serverReadyAction": {
+                "pattern": "- Local:\\s+(https?://\\S+)",
+                "uriFormat": "%s",
+                "action": "openExternally"
+            }
+        }
+    ],
+    "compounds": [
+        {
+            "name": "Debug Backend + Frontend",
+            "configurations": ["Debug Nest Framework", "Run Frontend"],
+            "stopAll": true
         }
     ]
 }

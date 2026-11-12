@@ -6,6 +6,7 @@ import { isValidObjectId, Model } from 'mongoose';
 import { InjectModel } from '@nestjs/mongoose';
 import { TemplatesService } from '../templates/templates.service';
 import { randomUUID } from 'crypto';
+import { sanitizeContent } from '../../helpers/sanitize';
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const HTMLtoDOCX = require('html-to-docx');
 
@@ -24,7 +25,7 @@ export class DocumentsService {
     const doc = await this.userDocModel.create({
       title: template.name,
       templateId: template._id,
-      content: html});
+      content: sanitizeContent(html)});
     return { _id: doc._id };
   }
 
@@ -47,7 +48,8 @@ export class DocumentsService {
     const doc = await this.findOne(id);
     if (!doc) throw new NotFoundException('Document not found');
 
-    return this.userDocModel.findByIdAndUpdate(id, dto, { new: true });
+    const update = dto.content === undefined ? dto : { ...dto, content: sanitizeContent(dto.content) };
+    return this.userDocModel.findByIdAndUpdate(id, update, { new: true });
   }
   async buildDocs(id: string) {
     const doc = await this.findOne(id);
@@ -85,8 +87,10 @@ export class DocumentsService {
   async findShared(shareId: string) {
     const doc = await this.userDocModel
       .findOne({ shareId })
-      .select('-_id title content updatedAt'); // không lộ _id, templateId cho người ngoài
+      .select('-_id title content updatedAt');
     if (!doc) throw new NotFoundException("The shared link isn't existed or recalled ")
+    // Also clean on read: documents saved before sanitizing was added may still hold scripts
+    doc.content = sanitizeContent(doc.content);
     return doc;
   }
 }
