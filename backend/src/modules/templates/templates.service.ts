@@ -98,14 +98,13 @@ export class TemplatesService implements OnModuleInit {
     return `${folder}/${name}`;
   }
 
-  async findAll(query: string, current: number, pageSize: number) {
-    const { filter, sort } = aqp(query);
-    delete filter.current;
-    delete filter.pageSize;
-    if (filter.q){
-      filter.searchText = this.searchTextFilter(String(filter.q));
-      delete filter.q;
-    }
+  async findAll(query: Record<string, string>, current: number, pageSize: number) {
+    // Only known keys become filters: passing aqp's filter through would let callers send
+    // their own regexes (/^(a+)+$/) or filter on internal fields like filePath
+    const { sort } = aqp(query);
+    const filter: Record<string, unknown> = {};
+    if (query.category) filter.category = String(query.category);
+    if (query.q) filter.searchText = this.searchTextFilter(String(query.q));
 
     const total = await this.templateModel.countDocuments(filter);
     const results = await this.templateModel.

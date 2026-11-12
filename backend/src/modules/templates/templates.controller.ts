@@ -40,7 +40,7 @@ export class TemplatesController {
 
   @Get()
   findAll(
-    @Query() query: string,
+    @Query() query: Record<string, string>,
     @Query('current') current: string,
     @Query('pageSize') pageSize: string,) {    
     return this.templatesService.findAll(query, +current || 1, +pageSize || 8);
