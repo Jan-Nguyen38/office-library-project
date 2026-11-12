@@ -51,6 +51,11 @@ export class TemplatesController {
     return this.templatesService.findCategories();
   }
 
+  @Get('categories/counts')
+  countByCategory(@Query('q') q?: string) {
+    return this.templatesService.countByCategory(q);
+  }
+
   @Get(':id')
   findOne(@Param('id') id: string) {
     return this.templatesService.findOne(id);

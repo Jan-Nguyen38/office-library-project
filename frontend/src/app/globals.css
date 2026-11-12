@@ -1,13 +1,108 @@
-body { margin: 0; background: #f5f5f5; }
+:root {
+  --desk: #ECEEF2;
+  --paper: #FFFFFF;
+  --ink: #1A1F2B;
+  --blue-ink: #1F3A93;
+  --graphite: #5B6475;
+  --rule: #D5D9E0;
+  --font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+}
+
+body {
+  margin: 0;
+  background: var(--desk);
+  color: var(--ink);
+  font-family: var(--font-sans);
+}
+
+.site-nav {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 4px 24px;
+  padding: 14px 24px;
+  background: var(--paper);
+  border-bottom: 1px solid var(--rule);
+}
+.site-nav a { color: var(--graphite); text-decoration: none; }
+.site-nav a:hover { color: var(--blue-ink); }
+.site-nav a:focus-visible { outline: 2px solid var(--blue-ink); outline-offset: 3px; border-radius: 2px; }
+.site-nav .site-brand {
+  margin-right: auto;
+  color: var(--ink);
+  font-weight: 600;
+  font-size: 17px;
+}
+
+@media (max-width: 640px) {
+  .site-nav { padding: 12px 16px; gap: 4px 16px; }
+  .site-nav .site-brand { flex-basis: 100%; }
+}
+
+/* A4 page with the templates' Word settings: margins 20/20/20/30mm, Times New Roman 13pt,
+   line spacing 1.25, 6pt after each paragraph */
 .paper {
-  background: #fff;
-  max-width: 794px;
+  box-sizing: border-box;
+  width: 210mm;
+  max-width: 100%;
+  min-height: 297mm;
   margin: 24px auto;
-  padding: 24px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-  font-family:'Times New Roman', serif;
-  font-size: 13px;
-  line-height: 1.5;
-  .paper table { border-collapse: collapse; width: 100%; }
-  .paper td, .paper th { border:1px solid #000; padding: 4px 8px; }
+  padding: 20mm 20mm 20mm 30mm;
+  background: #fff;
+  box-shadow: 0 1px 3px rgba(26, 31, 43, 0.12), 0 0 0 1px var(--rule);
+  font-family: 'Times New Roman', serif;
+  font-size: 13pt;
+  line-height: 1.25;
+  color: #000;
+}
+.paper p { margin: 0 0 6pt; }
+.paper h1 { font-size: 16pt; margin: 12pt 0 6pt; }
+.paper h2 { font-size: 14pt; margin: 12pt 0 6pt; }
+.paper h3 { font-size: 13pt; margin: 10pt 0 6pt; }
+.paper ul, .paper ol { margin: 0 0 6pt; padding-left: 24pt; }
+.paper li p { margin: 0 0 3pt; }
+.paper td p, .paper th p { margin: 0; }
+
+@media (max-width: 640px) {
+  .paper { min-height: 0; padding: 20px 16px; font-size: 12pt; }
+}
+.paper table { border-collapse: collapse; width: 100%; }
+.paper td, .paper th { border:1px solid #000; padding: 4px 8px; }
+.paper .ProseMirror:focus { outline: none; }
+
+/* Template blanks like [Họ và tên], marked as with a highlighter until filled */
+.paper .blank {
+  background: #FFF1A8;
+  border-radius: 2px;
+  box-shadow: 0 0 0 1px #F0D96A;
+}
+.paper .blank-active {
+  background: #FFE066;
+  box-shadow: 0 0 0 2px var(--blue-ink);
+}
+
+/* Fill preview: typed-but-not-applied values in blue ink, blanks still empty in seal red */
+.paper .preview-pending { color: var(--blue-ink); background: #E8EDFB; border-radius: 2px; }
+.paper .preview-empty {
+  color: #B4232A;
+  background: #FBE9EA;
+  text-decoration: underline dotted;
+  text-underline-offset: 3px;
+  border-radius: 2px;
+}
+
+@page { size: A4; margin: 20mm 20mm 20mm 30mm; }
+
+@media print {
+  .site-nav, .no-print { display: none !important; }
+  body { background: #fff; }
+  .paper {
+    width: auto;
+    max-width: none;
+    min-height: 0;
+    margin: 0 !important;
+    padding: 0;
+    box-shadow: none;
+  }
+  .paper .blank, .paper .blank-active { background: none; box-shadow: none; }
 }

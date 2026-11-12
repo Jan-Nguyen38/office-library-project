@@ -31,9 +31,10 @@ export class DocumentsController {
   @Get(':id/download')
   async download(@Param('id') id: string, @Res() res: Response) {
     const { buffer, filename } = await this.documentsService.buildDocs(id);
+    // attachment() adds filename*=UTF-8''… so Vietnamese titles keep their accents
+    res.attachment(filename);
     res.set({
       'Content-Type': 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
-      'Content-Disposition': `attachment; filename="${encodeURIComponent(filename)}"`,
       'Content-Length': buffer.length,
     })
     return res.send(buffer);
@@ -46,13 +47,17 @@ export class DocumentsController {
 
   @Get('shared/:shareId') // đặt TRÊN @Get(':id'), như /templates/categories ở B2
   findShared(@Param('shareId') shareId: string) {
-    return { shareId, title: 'giả', content: '<p>giả</p>' };
+    return this.documentsService.findShared(shareId);
   }
 
   @Post(':id/share')
   share(@Param('id') id: string) {
-    return { shareId: 'gia-' + id };
+    return this.documentsService.share(id);
   }
 
-  
+  @Delete(':id/share')
+  unshare(@Param('id') id: string){
+    return this.documentsService.unshare(id);
+  }
+
 }

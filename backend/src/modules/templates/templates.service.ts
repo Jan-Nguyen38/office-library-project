@@ -7,13 +7,45 @@ import { removeAccents } from '../../helpers/utils';
 import { BadRequestException, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import aqp from 'api-query-params';
-import { join } from 'path/win32';
 import { mkdir, readFile, writeFile } from 'fs/promises';
 import { randomUUID } from 'crypto';
-import { extname } from 'path';
+import { extname, join } from 'path';
 import * as mammoth from 'mammoth';
 import { SEED_TEMPLATES } from './seed';
 import { UploadTemplateDto } from './dto/upload-template.dto';
+
+// Mammoth drops Word paragraph alignment. We prefix each aligned paragraph with an invisible
+// marker run, then turn the marker into a text-align style on the block that contains it.
+const WORD_ALIGN: Record<string, string> = { center: 'center', right: 'right', end: 'right', both: 'justify', distribute: 'justify' };
+const MARK_START = '';
+const MARK_END = '';
+
+// transforms exists at runtime but is missing from mammoth's type definitions
+type MammothNode = { type: string; value?: string; alignment?: string | null; children: MammothNode[] };
+const transforms = (mammoth as unknown as {
+  transforms: {
+    paragraph: (fn: (p: MammothNode) => MammothNode) => unknown;
+    getDescendantsOfType: (node: MammothNode, type: string) => MammothNode[];
+  };
+}).transforms;
+
+const markAlignment = transforms.paragraph((p) => {
+  const align = WORD_ALIGN[p.alignment ?? ''];
+  // Empty paragraphs are dropped by mammoth; adding a marker would keep them
+  const hasText = transforms.getDescendantsOfType(p, 'text').some((t) => t.value?.trim());
+  if (!align || !hasText) return p;
+  const marker = { type: 'run', verticalAlignment: 'baseline', children: [{ type: 'text', value: `${MARK_START}${align}${MARK_END}`, children: [] }] } as MammothNode;
+  return { ...p, children: [marker, ...p.children] };
+});
+
+function applyAlignment(html: string) {
+  return html
+    .replace(
+      new RegExp(`<(p|h[1-6]|li)>((?:<[^>]+>)*)${MARK_START}(center|right|justify)${MARK_END}`, 'g'),
+      '<$1 style="text-align: $3">$2',
+    )
+    .replace(new RegExp(`${MARK_START}\\w+${MARK_END}`, 'g'), '');
+}
 
 // Subset of multer's file object (memory storage) that we use
 export interface UploadedFile {
@@ -25,14 +57,22 @@ export interface UploadedFile {
 export class TemplatesService implements OnModuleInit {
   constructor(@InjectModel(Template.name) private templateModel: Model<Template>) {}
   async onModuleInit() {
-    const count = await this.templateModel.countDocuments();
-    if (count > 0) return; // đã có dữ liệu thì không seed lại
-    for (const t of SEED_TEMPLATES) await this.create(t);
+    // Insert only the seed templates that are missing, so uploaded templates and existing IDs survive restarts
+    for (const t of SEED_TEMPLATES) {
+      await this.templateModel.updateOne(
+        { filePath: t.filePath },
+        { $setOnInsert: { ...t, searchText: this.searchTextOf(t) } },
+        { upsert: true },
+      );
+    }
   }
   async create(dto: CreateTemplateDto) {
-    const searchText = removeAccents([dto.name, dto.description, ...(dto.tags ?? [])].filter(Boolean).join(' '));
-    const template = await this.templateModel.create({...dto, searchText});
+    const template = await this.templateModel.create({...dto, searchText: this.searchTextOf(dto)});
     return {'_id': template._id};
+  }
+
+  private searchTextOf(dto: CreateTemplateDto) {
+    return removeAccents([dto.name, dto.description, ...(dto.tags ?? [])].filter(Boolean).join(' '));
   }
 
   async upload(dto: UploadTemplateDto, file: UploadedFile, thumbnail?: UploadedFile) {
@@ -63,8 +103,7 @@ export class TemplatesService implements OnModuleInit {
     delete filter.current;
     delete filter.pageSize;
     if (filter.q){
-      const keywords = removeAccents(String(filter.q)).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');;
-      filter.searchText = { $regex: keywords, $options: 'i' };
+      filter.searchText = this.searchTextFilter(String(filter.q));
       delete filter.q;
     }
 
@@ -79,6 +118,21 @@ export class TemplatesService implements OnModuleInit {
 
   findCategories() {
     return this.templateModel.distinct('category');
+  }
+
+  // Number of templates per category, matching the same keyword search as findAll
+  async countByCategory(q?: string) {
+    const match = q ? { searchText: this.searchTextFilter(q) } : {};
+    const rows = await this.templateModel.aggregate<{ _id: string; count: number }>([
+      { $match: match },
+      { $group: { _id: '$category', count: { $sum: 1 } } },
+    ]);
+    return Object.fromEntries(rows.map((r) => [r._id, r.count])) as Record<string, number>;
+  }
+
+  private searchTextFilter(q: string) {
+    const keywords = removeAccents(q).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    return { $regex: keywords, $options: 'i' };
   }
 
   
@@ -102,8 +156,12 @@ export class TemplatesService implements OnModuleInit {
     const fullPath =  join(process.cwd(), 'public', template.filePath);
     try {
       const buffer = await readFile(fullPath);
-      const content = await mammoth.convertToHtml({ buffer });
-      return { html: content.value}
+      const content = await mammoth.convertToHtml({ buffer }, {
+        transformDocument: markAlignment as never,
+        // Mammoth ignores underline unless mapped (e.g. "Độc lập - Tự do - Hạnh phúc")
+        styleMap: ['u => u'],
+      });
+      return { html: applyAlignment(content.value) }
     } catch {
       throw new NotFoundException('Failed to load template content');
     }
